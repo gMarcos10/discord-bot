@@ -59,7 +59,7 @@ class Bingo(commands.Cog):
 
 # ===================================================================================================
     
-    @app_commands.command(name="palpipi", description="Adiciona um palpite ao bingo ativo")
+    @app_commands.command(name="palpite", description="Adiciona um palpite ao bingo ativo")
     @app_commands.describe(texto = "Digite algo que você acha que pode acontecer no filme")
     async def add_palpite(self, interaction: discord.Interaction, texto:str):
             novo_palpite = Palpite(texto, interaction.user.id)
@@ -73,7 +73,7 @@ class Bingo(commands.Cog):
             else:
                 await interaction.response.send_message("Não há bingo ativo.", ephemeral=True)
 
-    @app_commands.command(name="mostrarpalpipes", description="Mostra a lista de palpites do bingo ativo")
+    @app_commands.command(name="mostrarpalpites", description="Mostra a lista de palpites do bingo ativo")
     async def mostrar_palpites(self, interaction: discord.Interaction):
         if not self.palpites: #se a lista de palpites estiver vazia
             await interaction.response.send_message("Não há palpipes ainda.")

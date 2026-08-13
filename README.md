@@ -30,7 +30,7 @@ Então resolvi fazer isso no próprio bot do Discord, para que todos possam dar 
 
 - `/criarbingo` + título → inicia uma sessão de bingo 5x5 com 24 espaços (o espaço do meio é `FREE`).
 - `/criarbing` + título → inicia uma sessão de bingo 4x4 com 16 espaços (sem `FREE`).
-- `/addpalpite` + mensagem → adiciona o palpite à cartela.
+- `/palpite` + mensagem → adiciona o palpite à cartela.
 - `/mostrarpalpites` → mostra a lista de palpites com um número de identificação (ID).
 - `/removerpalpite` + ID do palpite → remove o palpite com base no ID, caso seja do mesmo usuário que executou o comando. **Em breve.**
 - `/gerarcartela` → embaralha os palpites e gera a imagem da cartela. **Em breve.**
