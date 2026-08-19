@@ -25,9 +25,9 @@ class Bingo(commands.Cog):
             self.tamanho = tamanho
             self.palpites = []
             if self.tamanho == 16:
-                await interaction.response.send_message(f"Bing **{titulo}** iniciado.\nDigite /palpipi para dar o seu palpipi.")
+                await interaction.response.send_message(f"Bing **{titulo}** iniciado.\nDigite /palpite para dar o seu palpite.")
                 return
-            await interaction.response.send_message(f"Bingo **{titulo}** iniciado.\nDigite /palpipi para dar o seu palpipi.")
+            await interaction.response.send_message(f"Bingo **{titulo}** iniciado.\nDigite /palpite para dar o seu palpite.")
 
     @app_commands.command(
         name = "criarbingo",
@@ -80,8 +80,8 @@ class Bingo(commands.Cog):
             return
         
         lista = ""
-        for numero, palpite in enumerate(self.palpites, start=1):
-            lista += f"{numero}. {palpite.texto}\n"
+        for palpite_id, palpite in enumerate(self.palpites, start=1):
+            lista += f"{palpite_id}. {palpite.texto}\n"
 
         embed_palpites = discord.Embed(
             title=f"Palpites para {self.titulo}   {len(self.palpites)}/{self.tamanho}",
@@ -90,8 +90,24 @@ class Bingo(commands.Cog):
 
         await interaction.response.send_message(embed=embed_palpites)
 
+    @app_commands.command(name="removerpalpite", description="Remova um palpite digitando o Id")
+    @app_commands.describe(palpite_id = "Digite o Id do palpite (número que aparece na lista de palpites)")
+    #Id será a posição na lista
+    async def removerpalpite(self, interaction: discord.Interaction, palpite_id:int):
+        if palpite_id < 1 or palpite_id > len(self.palpites):
+            await interaction.response.send_message(
+                "Esse ID de palpite não existe.",
+                ephemeral=True
+            )
+            return
+        indice = palpite_id - 1 # a lista começa a contar do 0, então precisa subtrair 1
+        palpite = self.palpites[indice]
+        if palpite.autor_id != interaction.user.id:
+            await interaction.response.send_message("Esse palpite não é seu.", ephemeral=True)
+        else:
+            self.palpites.pop(indice)
+            await interaction.response.send_message("Palpite removido com sucesso!", ephemeral=True)
+
+
 async def setup(bot):
     await bot.add_cog(Bingo(bot))
-
-    #@app_commands.command(name="removerpalpipi")
-    
