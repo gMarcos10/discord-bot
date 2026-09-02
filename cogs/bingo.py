@@ -1,6 +1,9 @@
 import discord
+import random
 from discord.ext import commands
 from discord import app_commands
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 
 class Palpite:
     def __init__(self, texto, autor_id):
@@ -108,6 +111,104 @@ class Bingo(commands.Cog):
             self.palpites.pop(indice)
             await interaction.response.send_message("Palpite removido com sucesso!", ephemeral=True)
 
+# ===================================================================================================
+
+    def criar_imagem_cartela(self):
+
+        # Tamanho da cartela
+        tamanho = 5 if self.tamanho == 24 else 4
+
+        # Dimensões da imagem
+        largura = 1000
+        altura = 1000
+
+        # Tamanho de cada quadrado
+        tamanho_quadrado = largura // tamanho
+
+        # Cria a imagem
+        imagem = Image.new("RGB", (largura, altura), "white")
+        desenho = ImageDraw.Draw(imagem)
+
+        # Fonte
+        fonte_letra = ImageFont.truetype("arial.ttf", 50)
+        fonte_palpite = ImageFont.truetype("arial.ttf", 25)
+
+        # Desenha os quadrados
+        for linha in range(tamanho):
+            for coluna in range(tamanho):
+
+                x1 = coluna * tamanho_quadrado
+                y1 = linha * tamanho_quadrado
+
+                x2 = x1 + tamanho_quadrado
+                y2 = y1 + tamanho_quadrado
+
+                desenho.rectangle(
+                    (x1, y1, x2, y2),
+                    outline="black",
+                    width=3
+                )
+
+        # Coloca os palpites
+        indice_palpite = 0
+
+        for linha in range(tamanho):
+            for coluna in range(tamanho):
+
+                # FREE no centro do bingo 5x5
+                if tamanho == 5 and linha == 2 and coluna == 2:
+                    texto = "FREE"
+
+                else:
+                    palpite = self.palpites[indice_palpite]
+                    texto = palpite.texto
+
+                    indice_palpite += 1
+
+                x = coluna * tamanho_quadrado + tamanho_quadrado // 2
+                y = linha * tamanho_quadrado + tamanho_quadrado // 2
+
+                desenho.text(
+                    (x, y),
+                    texto,
+                    font=fonte_palpite,
+                    fill="black",
+                    anchor="mm"
+                )
+
+        # Salva a imagem na memória
+        arquivo = BytesIO()
+        imagem.save(arquivo, format="PNG")
+        arquivo.seek(0)
+
+        return arquivo
+    
+# ===================================================================================================
+    
+    @app_commands.command(name="gerarcartela", description="Embaralha os palpites e gera a cartela do bingo")
+    async def gerarcartela(self, interaction: discord.Interaction):
+        if len(self.palpites) != self.tamanho:
+            await interaction.response.send_message("A cartela ainda não está cheia.")
+            return
+        random.shuffle(self.palpites)
+
+        imagem = self.criar_imagem_cartela()
+
+        arquivo = discord.File(
+            imagem,
+            filename="cartela.png"
+        )
+
+        embed = discord.Embed(
+            title=f"Bingo: {self.titulo}"
+        )
+
+        embed.set_image(url="attachment://cartela.png")
+
+        await interaction.response.send_message(
+            embed=embed,
+            file=arquivo
+        )
 
 async def setup(bot):
     await bot.add_cog(Bingo(bot))

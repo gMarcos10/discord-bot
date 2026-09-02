@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from discord import app_commands #aqui é onde fica os slash commands
-import random
 import asyncio
 import os
 from dotenv import load_dotenv
