@@ -30,5 +30,28 @@ class Geral(commands.Cog):
         avatar_embed.set_image(url=usuario.display_avatar.url)
         await interaction.response.send_message(embed=avatar_embed)
 
+    @app_commands.command(
+        name="help",
+        description="Exibe uma lista com todos os comandos disponíveis"
+    )
+    async def help(
+        self,
+        interaction: discord.Interaction
+    ):
+        lista_comandos = []
+        comandos = self.bot.tree.get_commands()
+        for comando in comandos:
+            lista_comandos.append((comando.name, comando.description))
+
+        lista_comandos_embed = discord.Embed(title="Lista de comandos")
+        for nome, descricao in lista_comandos:
+            lista_comandos_embed.add_field(
+                name=nome,
+                value=descricao,
+                inline=False
+            )
+
+        await interaction.response.send_message(embed=lista_comandos_embed)
+
 async def setup(bot):
     await bot.add_cog(Geral(bot))
