@@ -205,13 +205,75 @@ class Bingo(commands.Cog):
                 x = coluna * tamanho_quadrado + tamanho_quadrado // 2
                 y = linha * tamanho_quadrado + tamanho_quadrado // 2
 
-                desenho.text(
-                    (x, y),
-                    texto,
-                    font=fonte_palpite,
-                    fill="black",
-                    anchor="mm"
-                )
+                # Mantém cada palpite dentro do quadrado: primeiro quebra as linhas
+                # pela largura disponível e, se necessário, reduz só a fonte deste palpite.
+                margem = 18
+                largura_maxima = tamanho_quadrado - margem * 2
+                altura_maxima = tamanho_quadrado - margem * 2
+                tamanho_fonte = 25
+                texto_em_linhas = None
+                fonte_ajustada = None
+
+                while tamanho_fonte >= 1:
+                    fonte_ajustada = ImageFont.truetype("arial.ttf", tamanho_fonte)
+                    linhas = []
+
+                    for paragrafo in texto.splitlines() or [""]:
+                        palavras = paragrafo.split()
+                        if not palavras:
+                            linhas.append("")
+                            continue
+
+                        linha_atual = ""
+                        for palavra in palavras:
+                            candidato = f"{linha_atual} {palavra}".strip()
+                            if desenho.textbbox((0, 0), candidato, font=fonte_ajustada)[2] <= largura_maxima:
+                                linha_atual = candidato
+                                continue
+
+                            if linha_atual:
+                                linhas.append(linha_atual)
+                                linha_atual = ""
+
+                            # Divide palavras sem espaços que sejam maiores que o quadrado.
+                            trecho = ""
+                            for caractere in palavra:
+                                candidato = trecho + caractere
+                                if trecho and desenho.textbbox((0, 0), candidato, font=fonte_ajustada)[2] > largura_maxima:
+                                    linhas.append(trecho)
+                                    trecho = caractere
+                                else:
+                                    trecho = candidato
+                            linha_atual = trecho
+
+                        if linha_atual:
+                            linhas.append(linha_atual)
+
+                    bbox_linha = desenho.textbbox((0, 0), "Ag", font=fonte_ajustada)
+                    altura_linha = bbox_linha[3] - bbox_linha[1]
+                    if len(linhas) * altura_linha <= altura_maxima:
+                        texto_em_linhas = linhas
+                        break
+                    tamanho_fonte -= 1
+
+                # O limite mínimo preserva a legibilidade para entradas extremas.
+                if texto_em_linhas is None:
+                    fonte_ajustada = ImageFont.truetype("arial.ttf", tamanho_fonte)
+                    texto_em_linhas = linhas
+
+                bbox_linha = desenho.textbbox((0, 0), "Ag", font=fonte_ajustada)
+                altura_linha = bbox_linha[3] - bbox_linha[1]
+                altura_total = len(texto_em_linhas) * altura_linha
+                y_inicio = y - altura_total // 2
+
+                for numero_linha, linha_texto in enumerate(texto_em_linhas):
+                    desenho.text(
+                        (x, y_inicio + numero_linha * altura_linha),
+                        linha_texto,
+                        font=fonte_ajustada,
+                        fill="black",
+                        anchor="mt"
+                    )
 
         # Salva a imagem na memória
         arquivo = BytesIO()
@@ -241,6 +303,8 @@ class Bingo(commands.Cog):
         )
 
         embed.set_image(url="attachment://cartela.png")
+
+        self.bingo_ativo = False
 
         await interaction.response.send_message(
             embed=embed,
