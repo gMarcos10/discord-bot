@@ -11,9 +11,13 @@ class Geral(commands.Cog):
     async def oi(self, ctx:commands.Context): #Tipar o context faz o python saber q é do tipo commands.
         await ctx.reply(f"Olá, {ctx.author.name}!") #reply não só manda msg, ele responde a mensagem do .oi
 
-    @commands.command()
-    async def falar(self, ctx:commands.Context, *, texto):
-        await ctx.send(texto)
+    @app_commands.command(
+        name='falar',
+        description='O bot fala o texto digitado'
+    )
+    @app_commands.describe(texto="Digite o texto que o bot irá falar")
+    async def falar(self, interaction:discord.Interaction, *, texto:str):
+        await interaction.response.send_message(texto)
 
     @app_commands.command(
         name="avatar", 
@@ -29,6 +33,32 @@ class Geral(commands.Cog):
         avatar_embed = discord.Embed(title=f"Foto de perfil de {usuario.name}")
         avatar_embed.set_image(url=usuario.display_avatar.url)
         await interaction.response.send_message(embed=avatar_embed)
+
+    @app_commands.command(
+        name="help",
+        description="Exibe uma lista com todos os comandos disponíveis"
+    )
+    async def help(
+        self,
+        interaction: discord.Interaction
+    ):
+        
+        lista_comandos = []
+        for comando in self.bot.commands: # comandos com .
+            lista_comandos.append((f'.{comando.name}', comando.description))
+
+        for comando in self.bot.tree.get_commands(): # comandos com /
+            lista_comandos.append((f'/{comando.name}', comando.description))
+
+        lista_comandos_embed = discord.Embed(title="Lista de comandos")
+        for nome, descricao in lista_comandos:
+            lista_comandos_embed.add_field(
+                name=nome,
+                value=descricao,
+                inline=False
+            )
+
+        await interaction.response.send_message(embed=lista_comandos_embed)
 
 async def setup(bot):
     await bot.add_cog(Geral(bot))
