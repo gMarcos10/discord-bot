@@ -16,8 +16,8 @@ class Geral(commands.Cog):
         description='O bot fala o texto digitado'
     )
     @app_commands.describe(texto="Digite o texto que o bot irá falar")
-    async def falar(self, ctx:commands.Context, *, texto):
-        await ctx.send(texto)
+    async def falar(self, interaction:discord.Interaction, *, texto:str):
+        await interaction.response.send_message(texto)
 
     @app_commands.command(
         name="avatar", 
