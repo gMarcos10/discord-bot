@@ -11,7 +11,11 @@ class Geral(commands.Cog):
     async def oi(self, ctx:commands.Context): #Tipar o context faz o python saber q é do tipo commands.
         await ctx.reply(f"Olá, {ctx.author.name}!") #reply não só manda msg, ele responde a mensagem do .oi
 
-    @commands.command()
+    @app_commands.command(
+        name='falar',
+        description='O bot fala o texto digitado'
+    )
+    @app_commands.describe(texto="Digite o texto que o bot irá falar")
     async def falar(self, ctx:commands.Context, *, texto):
         await ctx.send(texto)
 
@@ -38,10 +42,13 @@ class Geral(commands.Cog):
         self,
         interaction: discord.Interaction
     ):
+        
         lista_comandos = []
-        comandos = self.bot.tree.get_commands()
-        for comando in comandos:
-            lista_comandos.append((comando.name, comando.description))
+        for comando in self.bot.commands: # comandos com .
+            lista_comandos.append((f'.{comando.name}', comando.description))
+
+        for comando in self.bot.tree.get_commands(): # comandos com /
+            lista_comandos.append((f'/{comando.name}', comando.description))
 
         lista_comandos_embed = discord.Embed(title="Lista de comandos")
         for nome, descricao in lista_comandos:
